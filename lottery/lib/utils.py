@@ -1,4 +1,6 @@
 import pandas as pd
+import numpy as np
+from IPython.display import display
 
 
 def show_column_rank(df, column):
@@ -124,8 +126,18 @@ def predict_lotto(lotto, df, tests, runs=100, debug=False):
 
     # Generate random numbers and analyze the numbers
     data = []
+    
+    # Generate number frequency for generating random lotto numbers using last 20? draws
+    t = pd.melt(df.iloc[0:20], id_vars='Date', value_vars=[f'Draw{i}' for i in range(1, lotto.noOfDraws + 1)], value_name='Draw')
+    t = t.groupby(['Draw'])['Draw'].count().reset_index(name="Count").sort_values(["Draw"])
+    counts = []
+    for i in range(0, 49):
+        counts.append(int(t[t['Draw'] == i+1]['Count'].values[0]) if len(t[t['Draw'] == i+1]) else 0)
+    if 0 in counts:
+        counts = [ c+1 for c in counts]
+        
     for i in range(runs):
-        numList = lotto.generate_lotto_nums()
+        numList = lotto.generate_lotto_nums(counts)
         result, v, m = analyze_generated_nums(numList, df, tests)
         
         if debug:
@@ -137,6 +149,7 @@ def predict_lotto(lotto, df, tests, runs=100, debug=False):
 
     # Normalize the test columns
     df = normalized_col(df, testCols)
+    df.loc[:, testCols] *= np.array([t["weight"] if t["weight"] else 1 for t in tests])
     df["Score"] = df[testCols].sum(axis=1)
 
     return df.sort_values("Score", ascending=False).reset_index(drop=True)
@@ -161,7 +174,7 @@ def backtest_lotto(lotto, dfOrg, tests, runs=100, numOfTest=1):
             runs=runs
         )
         df_predict["Result"] = df_predict[
-            ["Draw1", "Draw2", "Draw3", "Draw4", "Draw5"]
+            [f"Draw{i}" for i in range(1, lotto.noOfDraws+1)]
         ].apply(lambda x: len(list(set(x) & set(draw))), axis=1)
         
         mean = df_predict["Score"].mean()
@@ -183,7 +196,10 @@ def backtest_lotto(lotto, dfOrg, tests, runs=100, numOfTest=1):
         
         df_hit = df_predict[df_predict["Result"] >= 3].sort_values(["Result", "Score"], ascending=False)
 
-        display(df_hit)
+        display(df_predict.head())
+        print()
+        display(df_hit.head())
+        print()
         
         # return df_predict
         

@@ -117,28 +117,34 @@ class Lotto:
         return df
 
 
-    def generate_lotto_nums(self):
-        l = random.sample(range(1, self.maxNum + 1), self.noOfDraws)
+    def generate_lotto_nums(self, counts=None):
+        l = random.sample(range(1, self.maxNum + 1), self.noOfDraws, counts=counts)
+        
+        # if there is duplicates in the list, generate the list again
+        if len(l) != len(set(l)):
+            return self.generate_lotto_nums(counts)
+        
         l.sort()
         return l
 
 
-    def test_count_in_prev_draws(self, numList, df):
-        counter = 0
-        draws_list = [f'Draw{i}' for i in range(1, self.noOfDraws + 1)]
+    def test_count_in_prev_draws(self, noOfPrevDraws):
+        draws_list = [f'Draw{i}' for i in range(1, self.noOfDraws+1)]
+        
+        def count_in_prev_draws(numList, df):
+            counter = 0
 
-        # for n in range(1, self.noOfDraws+1):
-        #     draws_list.append('Draw'+str(n))
+            dp_t = pd.melt(df.iloc[0: noOfPrevDraws], id_vars='Date', value_vars=draws_list, value_name='Draw')
+            ar_t = dp_t['Draw'].unique()
 
-        dp_t = pd.melt(df.iloc[0: self.maxPrevDraws], id_vars='Date', value_vars=draws_list, value_name='Draw')
-        ar_t = dp_t['Draw'].unique()
+            for n in numList:
+                if n in ar_t:
+                    counter += 1
 
-        for n in numList:
-            if n in ar_t:
-                counter += 1
-
-        ar_t.sort()
-        return counter, ar_t
+            ar_t.sort()
+            return counter, ar_t
+        
+        return count_in_prev_draws
     
     
     def test_ones_digit(self, numList, _):
