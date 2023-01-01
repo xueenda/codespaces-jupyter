@@ -41,6 +41,9 @@ parser.add_option('-n', '--num',
     action="store", dest="num",
     help="Number of backtest to go back to in the history", default="10")
 
+parser.add_option('-g', '--gen',
+    action="store_true", dest="gen",
+    help="Generate data analysis based on raw data")
 
 options, args = parser.parse_args()
 
@@ -56,18 +59,23 @@ lotto = Lotto('Daily Grand')
 
 # In[3]:
 
-
-# df = pd.read_csv("./data/DailyGrand/DailyGrand.raw.csv", parse_dates=['Date'])
+if  options.gen:
+    print('Generate data analysis based on raw data')
+    df = pd.read_csv("./data/DailyGrand/DailyGrand.raw.csv", parse_dates=['Date'])
+    df = lotto.build_sum_div_bucket(df)
+    df = lotto.get_prev_draws_analytics(df)
+    df.to_csv("./data/DailyGrand/DailyGrand.analytics.csv", index=False)
+    exit()
 
 
 # In[4]:
 
 
 # print("Generate sum, bucket, divide analytics")
-# df = lotto.build_sum_div_bucket(df)
+# 
 
 # print("Generate the relations between previous draws and current draws")
-# df = lotto.get_prev_draws_analytics(df)
+# 
 
 
 # In[5]:

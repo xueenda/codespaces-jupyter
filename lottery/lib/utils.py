@@ -184,20 +184,20 @@ def backtest_lotto(lotto, dfOrg, tests, runs=100, numOfTest=1):
         
         print(date.strftime('%Y-%m-%d'), draw, mean, std)
         
-        print([round(n, 6) for n in [
-            minS, 
-            (minS + mean - std) / 2, 
-            mean-std, 
-            mean-std/2, 
-            mean+std/2,
-            mean+std, 
-            (mean +std + maxS) / 2,
-            maxS]])
+        # print([round(n, 6) for n in [
+        #     minS, 
+        #     (minS + mean - std) / 2, 
+        #     mean-std, 
+        #     mean-std/2, 
+        #     mean+std/2,
+        #     mean+std, 
+        #     (mean +std + maxS) / 2,
+        #     maxS]])
         
         df_hit = df_predict[df_predict["Result"] >= 3].sort_values(["Result", "Score"], ascending=False)
 
-        display(df_predict.head())
-        print()
+        # display(df_predict.head())
+        # print()
         display(df_hit.head())
         print()
         
